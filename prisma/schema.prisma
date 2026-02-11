@@ -1,0 +1,170 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Kullanıcı modeli - müşteri bilgileri
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+  cart      CartItem[]
+  
+  @@map("users")
+}
+
+// Kategori modeli - ürün kategorileri (Telefon, Aksesuar vb.)
+model Category {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  slug        String     @unique
+  description String?
+  image       String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  products    Product[]
+  
+  @@map("categories")
+}
+
+// Marka modeli - ürün markaları
+model Brand {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  slug      String     @unique
+  logo      String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  products  Product[]
+  
+  @@map("brands")
+}
+
+// Ürün modeli - telefonlar ve aksesuarlar
+model Product {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  description String?
+  price       Float
+  comparePrice Float?     // karşılaştırma fiyatı (eski fiyat)
+  cost        Float?      // maliyet fiyatı
+  sku         String      @unique
+  barcode     String?
+  trackQuantity Boolean   @default(true)
+  quantity    Int         @default(0)
+  weight      Float?      // gram cinsinden
+  condition   ProductCondition @default(NEW)
+  images      String[]    // ürün resimleri (URL'ler)
+  featured    Boolean     @default(false)
+  status      ProductStatus @default(ACTIVE)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  categoryId  String
+  brandId     String
+  category    Category    @relation(fields: [categoryId], references: [id])
+  brand       Brand       @relation(fields: [brandId], references: [id])
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+  
+  @@map("products")
+}
+
+// Sepet öğesi modeli
+model CartItem {
+  id        String  @id @default(cuid())
+  userId    String
+  productId String
+  quantity  Int     @default(1)
+  user      User    @relation(fields: [userId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, productId])
+  @@map("cart_items")
+}
+
+// Sipariş modeli
+model Order {
+  id              String       @id @default(cuid())
+  orderNumber     String       @unique
+  userId          String
+  status          OrderStatus  @default(PENDING)
+  subtotal        Float
+  tax             Float        @default(0)
+  shipping        Float        @default(0)
+  total           Float
+  currency        String       @default("TRY")
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentMethod   String?
+  shippingAddress Json?        // teslimat adresi (JSON formatında)
+  billingAddress  Json?        // fatura adresi (JSON formatında)
+  notes           String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  user            User         @relation(fields: [userId], references: [id])
+  items           OrderItem[]
+  
+  @@map("orders")
+}
+
+// Sipariş öğesi modeli
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Float    // sipariş anındaki fiyat
+  product   Product @relation(fields: [productId], references: [id])
+  order     Order   @relation(fields: [orderId], references: [id])
+  
+  @@map("order_items")
+}
+
+// Ürün durumu enum'u
+enum ProductCondition {
+  NEW    // Yeni
+  USED   // İkinci el
+  REFURBISHED // Yenilenmiş
+}
+
+// Ürün statüsü enum'u
+enum ProductStatus {
+  ACTIVE   // Aktif
+  INACTIVE // Pasif
+  DRAFT    // Taslak
+}
+
+// Sipariş durumu enum'u
+enum OrderStatus {
+  PENDING    // Beklemede
+  CONFIRMED  // Onaylandı
+  PROCESSING // Hazırlanıyor
+  SHIPPED    // Kargolandı
+  DELIVERED  // Teslim edildi
+  CANCELLED  // İptal edildi
+}
+
+// Ödeme durumu enum'u
+enum PaymentStatus {
+  PENDING   // Beklemede
+  PAID      // Ödendi
+  FAILED    // Başarısız
+  REFUNDED  // İade edildi
+}
