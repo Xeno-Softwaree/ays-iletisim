@@ -49,7 +49,6 @@ prisma_log*
 *.txt
 test_*
 debug-*
-verify-*
 check_*
 settings_check.json
 stock_alerts.json
