@@ -29,8 +29,11 @@ export default async function TradeInRequestsPage() {
         redirect('/login?callbackUrl=/hesabim/trade-in');
     }
 
+    const userEmail = session.user.email;
+    const userId = session.user.id;
+
     const user = await prisma.user.findUnique({
-        where: { email: session.user.email },
+        where: { email: userEmail },
         select: { phone: true },
     });
 
@@ -43,7 +46,7 @@ export default async function TradeInRequestsPage() {
     const allUserRequests = await prisma.tradeInRequest.findMany({
         where: {
             OR: [
-                { userId: session.user.id },
+                { userId: userId },
                 user?.phone ? { customerPhone: { contains: normalizePhone(user.phone) } } : {}
             ].filter(cond => Object.keys(cond).length > 0)
         },
@@ -53,9 +56,9 @@ export default async function TradeInRequestsPage() {
     // Additional strict filter for legacy phones
     if (user?.phone) {
         const normalizedUserPhone = normalizePhone(user.phone);
-        requests = allUserRequests.filter(r => r.userId === session.user.id || normalizePhone(r.customerPhone) === normalizedUserPhone);
+        requests = allUserRequests.filter(r => r.userId === userId || normalizePhone(r.customerPhone) === normalizedUserPhone);
     } else {
-        requests = allUserRequests.filter(r => r.userId === session.user.id);
+        requests = allUserRequests.filter(r => r.userId === userId);
     }
 
     const formatPrice = (val: any) =>
