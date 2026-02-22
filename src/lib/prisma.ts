@@ -3,7 +3,11 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 
 const connectionString = `${process.env.DATABASE_URL}`;
-const pool = new Pool({ connectionString });
+const pool = new Pool({
+    connectionString,
+    max: 10, // Limit max connections per serverless instance
+    idleTimeoutMillis: 30000
+});
 const adapter = new PrismaPg(pool);
 
 const globalForPrisma = global as unknown as { prisma_v4: PrismaClient };
