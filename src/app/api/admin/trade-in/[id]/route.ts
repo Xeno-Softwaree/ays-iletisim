@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { sendTradeInStatusEmail } from '@/lib/brevo';
 
 export async function PUT(
     request: Request,
@@ -22,6 +23,31 @@ export async function PUT(
             where: { id },
             data: { status },
         });
+
+        // Map Turkish DB statuses to Email hook statuses
+        const statusMap: Record<string, string> = {
+            'İnceleniyor': 'REVIEWING',
+            'Onaylandı': 'APPROVED',
+            'Reddedildi': 'REJECTED'
+        };
+
+        const emailStatus = statusMap[status];
+
+        // Only send if the user provided an email and the status is email-worthy
+        if (updatedRequest.customerEmail && emailStatus) {
+            try {
+                await sendTradeInStatusEmail({
+                    email: updatedRequest.customerEmail,
+                    fullName: updatedRequest.customerName || 'Değerli Müşterimiz',
+                    deviceName: `${updatedRequest.brand} ${updatedRequest.model}`,
+                    formId: updatedRequest.id,
+                    newStatus: emailStatus,
+                    finalPrice: updatedRequest.finalOffer ? Number(updatedRequest.finalOffer) : null
+                });
+            } catch (emailError) {
+                console.error('Failed to send trade-in status email:', emailError);
+            }
+        }
 
         return NextResponse.json({
             success: true,

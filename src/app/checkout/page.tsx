@@ -20,7 +20,7 @@ export default function CheckoutPage() {
     phone: '',
     address: '',
     city: '',
-    paymentMethod: 'CREDIT_CARD' as 'CREDIT_CARD' | 'TRANSFER',
+    paymentMethod: 'TRANSFER' as 'CREDIT_CARD' | 'TRANSFER',
   });
 
   const [contracts, setContracts] = useState({
@@ -343,6 +343,7 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* POS Integration Pending
                   <label
                     onClick={() => setForm({ ...form, paymentMethod: 'CREDIT_CARD' })}
                     className={cn(
@@ -365,6 +366,7 @@ export default function CheckoutPage() {
                       <p className="text-xs text-slate-500 font-medium mt-0.5">Güvenli Online Ödeme</p>
                     </div>
                   </label>
+                  */}
 
                   <label
                     onClick={() => setForm({ ...form, paymentMethod: 'TRANSFER' })}

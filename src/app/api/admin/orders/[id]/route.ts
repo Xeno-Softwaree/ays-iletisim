@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { OrderStatus } from '@prisma/client';
-import { sendShippingEmail } from '@/lib/brevo';
+import { sendOrderStatusEmail } from '@/lib/brevo';
 
 export async function PATCH(
     request: Request,
@@ -24,22 +24,22 @@ export async function PATCH(
             include: { user: true }
         });
 
-        // Send email if status is SHIPPED and tracking number exists
-        if (status === 'SHIPPED' && trackingNumber) {
+        // Send email for all major status updates
+        if (['PREPARING', 'SHIPPED', 'DELIVERED', 'CANCELLED'].includes(status)) {
             const email = updatedOrder.user?.email || updatedOrder.guestEmail;
             const fullName = updatedOrder.user?.fullName || updatedOrder.fullName || 'Değerli Müşterimiz';
 
             if (email) {
                 try {
-                    await sendShippingEmail({
+                    await sendOrderStatusEmail({
                         email,
                         fullName,
                         orderId: updatedOrder.id,
+                        newStatus: status,
                         trackingNumber
                     });
                 } catch (emailError) {
-                    console.error('Failed to send shipping email:', emailError);
-                    // We don't throw here to ensure the order update itself is confirmed to the admin
+                    console.error('Failed to send order status email:', emailError);
                 }
             }
         }

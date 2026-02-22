@@ -18,7 +18,7 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { brand, model, screenCondition, batteryHealth, estimatedPrice, customerPhone } = body;
+        const { brand, model, screenCondition, batteryHealth, estimatedPrice, customerPhone, customerName, customerEmail } = body;
 
         // Validation
         if (!brand || !model || !screenCondition || batteryHealth === undefined || !estimatedPrice || !customerPhone) {
@@ -37,6 +37,8 @@ export async function POST(request: Request) {
                 batteryHealth: parseInt(batteryHealth),
                 estimatedPrice: parseFloat(estimatedPrice),
                 customerPhone,
+                customerName: customerName || null,
+                customerEmail: customerEmail || null,
                 status: 'Beklemede',
             },
         });

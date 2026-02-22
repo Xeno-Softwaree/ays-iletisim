@@ -30,7 +30,9 @@ export default function TradeInPage() {
         model: '',
         screenCondition: '',
         batteryHealth: 100,
-        customerPhone: ''
+        customerPhone: '',
+        customerName: '',
+        customerEmail: ''
     });
 
     const [result, setResult] = useState<{ estimatedPrice: number } | null>(null);
@@ -295,18 +297,41 @@ export default function TradeInPage() {
 
                             <div className="max-w-md mx-auto space-y-6 bg-slate-50 p-8 rounded-[40px] border border-slate-200 border-dashed">
                                 <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">İnceleme İçin İletişime Geçelim</h3>
-                                <div className="relative">
-                                    <input
-                                        type="tel"
-                                        placeholder="Telefon Numaranız (05XX...)"
-                                        value={formData.customerPhone}
-                                        onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
-                                        className="w-full h-16 px-6 bg-white border border-slate-200 rounded-[20px] outline-none font-black text-center text-lg placeholder:text-slate-300 focus:ring-8 focus:ring-blue-500/5 focus:border-blue-500 transition-all"
-                                    />
+                                <div className="space-y-4">
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            placeholder="Adınız Soyadınız"
+                                            required
+                                            value={formData.customerName}
+                                            onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+                                            className="w-full h-16 px-6 bg-white border border-slate-200 rounded-[20px] outline-none font-black text-center text-lg placeholder:text-slate-300 focus:ring-8 focus:ring-blue-500/5 focus:border-blue-500 transition-all"
+                                        />
+                                    </div>
+                                    <div className="relative">
+                                        <input
+                                            type="email"
+                                            placeholder="E-posta Adresiniz (Durum bildirimleri için)"
+                                            required
+                                            value={formData.customerEmail}
+                                            onChange={(e) => setFormData({ ...formData, customerEmail: e.target.value })}
+                                            className="w-full h-16 px-6 bg-white border border-slate-200 rounded-[20px] outline-none font-black text-center text-lg placeholder:text-slate-300 focus:ring-8 focus:ring-blue-500/5 focus:border-blue-500 transition-all"
+                                        />
+                                    </div>
+                                    <div className="relative">
+                                        <input
+                                            type="tel"
+                                            placeholder="Telefon Numaranız (05XX...)"
+                                            required
+                                            value={formData.customerPhone}
+                                            onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
+                                            className="w-full h-16 px-6 bg-white border border-slate-200 rounded-[20px] outline-none font-black text-center text-lg placeholder:text-slate-300 focus:ring-8 focus:ring-blue-500/5 focus:border-blue-500 transition-all"
+                                        />
+                                    </div>
                                 </div>
                                 <button
                                     onClick={handleFinalSubmit}
-                                    disabled={loading || !formData.customerPhone}
+                                    disabled={loading || !formData.customerPhone || !formData.customerName || !formData.customerEmail}
                                     className="w-full h-20 bg-slate-900 text-white rounded-[28px] font-black text-2xl hover:bg-slate-800 disabled:opacity-30 transition-all shadow-xl shadow-slate-900/10 flex items-center justify-center gap-4 uppercase tracking-widest"
                                 >
                                     {loading ? <Loader2 className="w-8 h-8 animate-spin" /> : 'SİZİ ARAYALIM'}
