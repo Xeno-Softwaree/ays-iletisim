@@ -1,5 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { auth } from '@/auth';
+import { sendTradeInStatusEmail } from '@/lib/brevo';
 import fs from 'fs';
 import path from 'path';
 
@@ -28,6 +30,9 @@ export async function POST(request: Request) {
             );
         }
 
+        const session = await auth();
+        const userId = session?.user?.id || null;
+
         // Create trade-in request
         const tradeInRequest = await prisma.tradeInRequest.create({
             data: {
@@ -39,6 +44,7 @@ export async function POST(request: Request) {
                 customerPhone,
                 customerName: customerName || null,
                 customerEmail: customerEmail || null,
+                userId,
                 status: 'Beklemede',
             },
         });
@@ -92,6 +98,30 @@ export async function PATCH(request: Request) {
 
         // Return updated record
         const updated = await prisma.tradeInRequest.findUnique({ where: { id } });
+
+        if (status !== undefined && updated) {
+            const statusMap: Record<string, string> = {
+                'İnceleniyor': 'REVIEWING',
+                'Onaylandı': 'APPROVED',
+                'Reddedildi': 'REJECTED'
+            };
+            const emailStatus = statusMap[status];
+
+            if (updated.customerEmail && emailStatus) {
+                try {
+                    await sendTradeInStatusEmail({
+                        email: updated.customerEmail,
+                        fullName: updated.customerName || 'Değerli Müşterimiz',
+                        deviceName: `${updated.brand} ${updated.model}`,
+                        formId: updated.id,
+                        newStatus: emailStatus,
+                        finalPrice: updated.finalOffer ? Number(updated.finalOffer) : null
+                    });
+                } catch (emailError) {
+                    console.error('Failed to send trade-in status email:', emailError);
+                }
+            }
+        }
 
         return NextResponse.json({ success: true, data: updated });
     } catch (error: any) {

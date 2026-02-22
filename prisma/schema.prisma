@@ -26,6 +26,7 @@ model User {
   addresses     Address[]
   favorites     Favorite[]
   reviews       Review[]
+  tradeInRequests TradeInRequest[]
 }
 
 model Address {
@@ -188,6 +189,8 @@ model TradeInRequest {
   customerName    String?
   customerEmail   String?
   status          String   @default("Beklemede") // "Beklemede", "İnceleniyor", "Onaylandı", "Reddedildi"
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id])
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }

@@ -25,7 +25,7 @@ const STATUS_MAP: Record<string, { label: string; color: string; bg: string; bor
 
 export default async function TradeInRequestsPage() {
     const session = await auth();
-    if (!session?.user?.email) {
+    if (!session?.user?.email || !session?.user?.id) {
         redirect('/login?callbackUrl=/hesabim/trade-in');
     }
 
@@ -40,11 +40,22 @@ export default async function TradeInRequestsPage() {
     const normalizePhone = (p: string) => p.replace(/\D/g, '').slice(-10);
 
     let requests: any[] = [];
+    const allUserRequests = await prisma.tradeInRequest.findMany({
+        where: {
+            OR: [
+                { userId: session.user.id },
+                user?.phone ? { customerPhone: { contains: normalizePhone(user.phone) } } : {}
+            ].filter(cond => Object.keys(cond).length > 0)
+        },
+        orderBy: { createdAt: 'desc' }
+    });
+
+    // Additional strict filter for legacy phones
     if (user?.phone) {
-        const normalized = normalizePhone(user.phone);
-        // Fetch all and filter – trade-in table may use different formats
-        const all = await prisma.tradeInRequest.findMany({ orderBy: { createdAt: 'desc' } });
-        requests = all.filter(r => normalizePhone(r.customerPhone) === normalized);
+        const normalizedUserPhone = normalizePhone(user.phone);
+        requests = allUserRequests.filter(r => r.userId === session.user.id || normalizePhone(r.customerPhone) === normalizedUserPhone);
+    } else {
+        requests = allUserRequests.filter(r => r.userId === session.user.id);
     }
 
     const formatPrice = (val: any) =>
