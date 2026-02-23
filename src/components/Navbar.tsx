@@ -317,6 +317,7 @@ export default function Navbar() {
                             </button>
                         </div>
                     </div>
+                </div>
             </nav>
 
             {/* Mobile Menu Overlay - Placed outside nav to prevent backdrop-blur containing block issues */}
