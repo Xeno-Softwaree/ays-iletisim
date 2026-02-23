@@ -133,192 +133,193 @@ export default function Navbar() {
     }
 
     return (
-        <nav
-            className={cn(
-                "sticky top-0 left-0 right-0 z-50 h-16 transition-all duration-300",
-                "bg-white/80 backdrop-blur-md border-b border-slate-200/60 flex items-center shadow-sm"
-            )}
-            ref={navRef}
-        >
-            <div className="max-w-7xl mx-auto px-4 md:px-6 w-full">
-                <div className="flex items-center justify-between gap-4 md:gap-8 h-16">
-                    {/* Logo Section */}
-                    <Link href="/" className="flex items-center gap-2 group shrink-0">
-                        <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center group-hover:bg-blue-100 transition-all duration-500">
-                            <Smartphone className="w-5 h-5 text-blue-600" />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-lg font-black text-slate-900 tracking-tighter leading-none">
-                                AYS <span className="text-blue-600">İLETİŞİM</span>
-                            </span>
-                            <span className="text-[9px] font-bold text-slate-400 tracking-widest uppercase">Erzincan</span>
-                        </div>
-                    </Link>
-
-                    {/* Desktop Menu - Pill Group */}
-                    <div className="hidden lg:flex items-center bg-slate-100/50 rounded-full p-1 border border-slate-200/40">
-                        <Link href="/" className="px-4 py-1.5 rounded-full text-xs font-bold text-slate-600 hover:text-blue-600 hover:bg-white transition-all">Ana Sayfa</Link>
-                        {categories.slice(0, 5).map((cat) => (
-                            <div
-                                key={cat.id}
-                                className="relative group"
-                                onMouseEnter={() => setActiveDropdown(cat.id)}
-                                onMouseLeave={() => setActiveDropdown(null)}
-                            >
-                                <Link
-                                    href={`/urunler?kategori=${cat.slug}`}
-                                    className={cn(
-                                        "flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap",
-                                        activeDropdown === cat.id ? "text-blue-600 bg-white shadow-sm" : "text-slate-600 hover:text-blue-600 hover:bg-white"
-                                    )}
-                                >
-                                    {cat.name}
-                                    {cat.children?.length > 0 && (
-                                        <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", activeDropdown === cat.id && "rotate-180")} />
-                                    )}
-                                </Link>
-
-                                {/* Dropdown menu */}
-                                <AnimatePresence>
-                                    {activeDropdown === cat.id && cat.children?.length > 0 && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: 10 }}
-                                            transition={{ duration: 0.2 }}
-                                            className="absolute top-full left-0 mt-2 w-56 bg-white border border-slate-200/60 rounded-2xl shadow-premium overflow-hidden z-50 py-2 flex flex-col"
-                                        >
-                                            <div className="px-4 py-2 border-b border-slate-100 mb-1">
-                                                <p className="text-xs font-black text-slate-400 uppercase tracking-wider">{cat.name} Alt Kategorileri</p>
-                                            </div>
-                                            {cat.children.map(sub => (
-                                                <Link
-                                                    key={sub.id}
-                                                    href={`/urunler?kategori=${sub.slug}`}
-                                                    className="block px-4 py-2 text-sm font-semibold text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 transition-colors"
-                                                    onClick={() => setActiveDropdown(null)}
-                                                >
-                                                    {sub.name}
-                                                </Link>
-                                            ))}
-                                            <div className="mt-1 pt-1 border-t border-slate-100">
-                                                <Link
-                                                    href={`/urunler?kategori=${cat.slug}`}
-                                                    className="block px-4 py-2 text-sm font-bold text-blue-600 hover:bg-blue-50/50 transition-colors"
-                                                    onClick={() => setActiveDropdown(null)}
-                                                >
-                                                    Tüm {cat.name} &rarr;
-                                                </Link>
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
+        <>
+            <nav
+                className={cn(
+                    "sticky top-0 left-0 right-0 z-50 h-16 transition-all duration-300",
+                    "bg-white/80 backdrop-blur-md border-b border-slate-200/60 flex items-center shadow-sm"
+                )}
+                ref={navRef}
+            >
+                <div className="max-w-7xl mx-auto px-4 md:px-6 w-full">
+                    <div className="flex items-center justify-between gap-4 md:gap-8 h-16">
+                        {/* Logo Section */}
+                        <Link href="/" className="flex items-center gap-2 group shrink-0">
+                            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center group-hover:bg-blue-100 transition-all duration-500">
+                                <Smartphone className="w-5 h-5 text-blue-600" />
                             </div>
-                        ))}
-                    </div>
-
-                    {/* Search Bar - Premium Rounded-Full */}
-                    <form
-                        onSubmit={handleSearch}
-                        className="hidden md:flex flex-1 max-w-sm relative group"
-                    >
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <Search className="h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
-                        </div>
-                        <input
-                            type="text"
-                            placeholder="Ürün veya model ara..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-slate-100/70 border border-transparent text-slate-900 text-sm rounded-full py-2 pl-11 pr-4 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/30 focus:bg-white transition-all"
-                        />
-                    </form>
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-2 md:gap-3 shrink-0">
-                        <Link
-                            href="/sepet"
-                            className="relative flex items-center justify-center w-10 h-10 rounded-full bg-slate-100/70 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-all"
-                        >
-                            <ShoppingCart className="w-5 h-5" />
-                            {mounted && totalCount > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center ring-2 ring-white">
-                                    {totalCount}
+                            <div className="flex flex-col">
+                                <span className="text-lg font-black text-slate-900 tracking-tighter leading-none">
+                                    AYS <span className="text-blue-600">İLETİŞİM</span>
                                 </span>
-                            )}
+                                <span className="text-[9px] font-bold text-slate-400 tracking-widest uppercase">Erzincan</span>
+                            </div>
                         </Link>
 
-                        {/* Auth area */}
-                        {status === 'loading' ? (
-                            <div className="w-10 h-10 rounded-full bg-slate-100 animate-pulse" />
-                        ) : session ? (
-                            <div className="relative" ref={dropdownRef}>
-                                <button
-                                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                                    className="flex items-center gap-2 p-1 pl-1 pr-2 rounded-full bg-slate-100/70 hover:bg-slate-200 transition-all border border-slate-200/20 group"
+                        {/* Desktop Menu - Pill Group */}
+                        <div className="hidden lg:flex items-center bg-slate-100/50 rounded-full p-1 border border-slate-200/40">
+                            <Link href="/" className="px-4 py-1.5 rounded-full text-xs font-bold text-slate-600 hover:text-blue-600 hover:bg-white transition-all">Ana Sayfa</Link>
+                            {categories.slice(0, 5).map((cat) => (
+                                <div
+                                    key={cat.id}
+                                    className="relative group"
+                                    onMouseEnter={() => setActiveDropdown(cat.id)}
+                                    onMouseLeave={() => setActiveDropdown(null)}
                                 >
-                                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-black shadow-premium">
-                                        {initials || <User className="w-4 h-4" />}
-                                    </div>
-                                    <span className="hidden sm:block text-xs font-bold text-slate-700">
-                                        {session.user?.name?.split(' ')[0] || 'Hesabım'}
-                                    </span>
-                                    <ChevronDown className={cn("w-3.5 h-3.5 text-slate-400 transition-transform", dropdownOpen && "rotate-180")} />
-                                </button>
+                                    <Link
+                                        href={`/urunler?kategori=${cat.slug}`}
+                                        className={cn(
+                                            "flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap",
+                                            activeDropdown === cat.id ? "text-blue-600 bg-white shadow-sm" : "text-slate-600 hover:text-blue-600 hover:bg-white"
+                                        )}
+                                    >
+                                        {cat.name}
+                                        {cat.children?.length > 0 && (
+                                            <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", activeDropdown === cat.id && "rotate-180")} />
+                                        )}
+                                    </Link>
 
-                                {dropdownOpen && (
-                                    <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-slate-200/60 rounded-2xl shadow-premium overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                                        <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/30">
-                                            <p className="text-slate-900 font-bold text-sm truncate">{session.user?.name}</p>
-                                            <p className="text-slate-500 text-[10px] font-medium truncate uppercase tracking-widest">{session.user?.email}</p>
-                                        </div>
-                                        <div className="p-1.5">
-                                            <Link href="/hesabim" onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 w-full px-3 py-2 text-sm text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl transition-all font-semibold">
-                                                <User className="w-4 h-4" /> Hesabım
-                                            </Link>
-                                            <Link href="/hesabim/favoriler" onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 w-full px-3 py-2 text-sm text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl transition-all font-semibold">
-                                                <Heart className="w-4 h-4" /> Favorilerim
-                                            </Link>
-                                            <Link href="/hesabim/siparisler" onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 w-full px-3 py-2 text-sm text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl transition-all font-semibold">
-                                                <ShoppingBag className="w-4 h-4" /> Siparişlerim
-                                            </Link>
-                                            {(session.user as any)?.role === 'ADMIN' && (
-                                                <Link href="/admin" onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 w-full px-3 py-2 text-sm text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl transition-all font-semibold">
-                                                    <Settings className="w-4 h-4" /> Yönetim Paneli
-                                                </Link>
-                                            )}
-                                        </div>
-                                        <div className="p-1.5 border-t border-slate-100">
-                                            <button onClick={handleSignOut} className="flex items-center gap-3 w-full px-3 py-2 text-sm text-red-500 hover:text-red-600 hover:bg-red-50/50 rounded-xl transition-all font-semibold text-left">
-                                                <LogOut className="w-4 h-4" /> Çıkış Yap
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="hidden sm:flex items-center gap-2">
-                                <Link href="/login" className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-blue-600 transition-all">
-                                    Giriş
-                                </Link>
-                                <Link href="/register" className="px-5 py-2 text-xs font-black bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-all shadow-premium hover:scale-105 active:scale-95 uppercase tracking-wider">
-                                    Kayıt Ol
-                                </Link>
-                            </div>
-                        )}
+                                    {/* Dropdown menu */}
+                                    <AnimatePresence>
+                                        {activeDropdown === cat.id && cat.children?.length > 0 && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: 10 }}
+                                                transition={{ duration: 0.2 }}
+                                                className="absolute top-full left-0 mt-2 w-56 bg-white border border-slate-200/60 rounded-2xl shadow-premium overflow-hidden z-50 py-2 flex flex-col"
+                                            >
+                                                <div className="px-4 py-2 border-b border-slate-100 mb-1">
+                                                    <p className="text-xs font-black text-slate-400 uppercase tracking-wider">{cat.name} Alt Kategorileri</p>
+                                                </div>
+                                                {cat.children.map(sub => (
+                                                    <Link
+                                                        key={sub.id}
+                                                        href={`/urunler?kategori=${sub.slug}`}
+                                                        className="block px-4 py-2 text-sm font-semibold text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 transition-colors"
+                                                        onClick={() => setActiveDropdown(null)}
+                                                    >
+                                                        {sub.name}
+                                                    </Link>
+                                                ))}
+                                                <div className="mt-1 pt-1 border-t border-slate-100">
+                                                    <Link
+                                                        href={`/urunler?kategori=${cat.slug}`}
+                                                        className="block px-4 py-2 text-sm font-bold text-blue-600 hover:bg-blue-50/50 transition-colors"
+                                                        onClick={() => setActiveDropdown(null)}
+                                                    >
+                                                        Tüm {cat.name} &rarr;
+                                                    </Link>
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            ))}
+                        </div>
 
-                        {/* Mobile menu button */}
-                        <button
-                            onClick={() => setMobileOpen(!mobileOpen)}
-                            className="lg:hidden w-10 h-10 flex items-center justify-center rounded-full text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-all"
+                        {/* Search Bar - Premium Rounded-Full */}
+                        <form
+                            onSubmit={handleSearch}
+                            className="hidden md:flex flex-1 max-w-sm relative group"
                         >
-                            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-                        </button>
-                    </div>
-                </div>
-            </div>
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <Search className="h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="Ürün veya model ara..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full bg-slate-100/70 border border-transparent text-slate-900 text-sm rounded-full py-2 pl-11 pr-4 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/30 focus:bg-white transition-all"
+                            />
+                        </form>
 
-            {/* Mobile Menu Overlay */}
+                        {/* Actions */}
+                        <div className="flex items-center gap-2 md:gap-3 shrink-0">
+                            <Link
+                                href="/sepet"
+                                className="relative flex items-center justify-center w-10 h-10 rounded-full bg-slate-100/70 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-all"
+                            >
+                                <ShoppingCart className="w-5 h-5" />
+                                {mounted && totalCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center ring-2 ring-white">
+                                        {totalCount}
+                                    </span>
+                                )}
+                            </Link>
+
+                            {/* Auth area */}
+                            {status === 'loading' ? (
+                                <div className="w-10 h-10 rounded-full bg-slate-100 animate-pulse" />
+                            ) : session ? (
+                                <div className="relative" ref={dropdownRef}>
+                                    <button
+                                        onClick={() => setDropdownOpen(!dropdownOpen)}
+                                        className="flex items-center gap-2 p-1 pl-1 pr-2 rounded-full bg-slate-100/70 hover:bg-slate-200 transition-all border border-slate-200/20 group"
+                                    >
+                                        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-black shadow-premium">
+                                            {initials || <User className="w-4 h-4" />}
+                                        </div>
+                                        <span className="hidden sm:block text-xs font-bold text-slate-700">
+                                            {session.user?.name?.split(' ')[0] || 'Hesabım'}
+                                        </span>
+                                        <ChevronDown className={cn("w-3.5 h-3.5 text-slate-400 transition-transform", dropdownOpen && "rotate-180")} />
+                                    </button>
+
+                                    {dropdownOpen && (
+                                        <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-slate-200/60 rounded-2xl shadow-premium overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                            <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/30">
+                                                <p className="text-slate-900 font-bold text-sm truncate">{session.user?.name}</p>
+                                                <p className="text-slate-500 text-[10px] font-medium truncate uppercase tracking-widest">{session.user?.email}</p>
+                                            </div>
+                                            <div className="p-1.5">
+                                                <Link href="/hesabim" onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 w-full px-3 py-2 text-sm text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl transition-all font-semibold">
+                                                    <User className="w-4 h-4" /> Hesabım
+                                                </Link>
+                                                <Link href="/hesabim/favoriler" onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 w-full px-3 py-2 text-sm text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl transition-all font-semibold">
+                                                    <Heart className="w-4 h-4" /> Favorilerim
+                                                </Link>
+                                                <Link href="/hesabim/siparisler" onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 w-full px-3 py-2 text-sm text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl transition-all font-semibold">
+                                                    <ShoppingBag className="w-4 h-4" /> Siparişlerim
+                                                </Link>
+                                                {(session.user as any)?.role === 'ADMIN' && (
+                                                    <Link href="/admin" onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 w-full px-3 py-2 text-sm text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl transition-all font-semibold">
+                                                        <Settings className="w-4 h-4" /> Yönetim Paneli
+                                                    </Link>
+                                                )}
+                                            </div>
+                                            <div className="p-1.5 border-t border-slate-100">
+                                                <button onClick={handleSignOut} className="flex items-center gap-3 w-full px-3 py-2 text-sm text-red-500 hover:text-red-600 hover:bg-red-50/50 rounded-xl transition-all font-semibold text-left">
+                                                    <LogOut className="w-4 h-4" /> Çıkış Yap
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="hidden sm:flex items-center gap-2">
+                                    <Link href="/login" className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-blue-600 transition-all">
+                                        Giriş
+                                    </Link>
+                                    <Link href="/register" className="px-5 py-2 text-xs font-black bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-all shadow-premium hover:scale-105 active:scale-95 uppercase tracking-wider">
+                                        Kayıt Ol
+                                    </Link>
+                                </div>
+                            )}
+
+                            {/* Mobile menu button */}
+                            <button
+                                onClick={() => setMobileOpen(!mobileOpen)}
+                                className="lg:hidden w-10 h-10 flex items-center justify-center rounded-full text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-all"
+                            >
+                                {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                            </button>
+                        </div>
+                    </div>
+            </nav>
+
+            {/* Mobile Menu Overlay - Placed outside nav to prevent backdrop-blur containing block issues */}
             <AnimatePresence>
                 {mobileOpen && (
                     <>
@@ -327,14 +328,14 @@ export default function Navbar() {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setMobileOpen(false)}
-                            className="fixed inset-0 bg-slate-900/20 backdrop-blur-[2px] z-40 lg:hidden"
+                            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] lg:hidden"
                         />
                         <motion.div
                             initial={{ x: "100%" }}
                             animate={{ x: 0 }}
                             exit={{ x: "100%" }}
                             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                            className="fixed top-0 right-0 bottom-0 w-[85%] max-w-sm bg-white z-50 lg:hidden shadow-2xl flex flex-col"
+                            className="fixed top-0 right-0 bottom-0 w-[85%] max-w-sm bg-white z-[110] lg:hidden shadow-2xl flex flex-col"
                         >
                             <div className="p-5 border-b border-slate-100 flex items-center justify-between">
                                 <Link href="/" className="flex items-center gap-2 group shrink-0" onClick={() => setMobileOpen(false)}>
@@ -486,6 +487,6 @@ export default function Navbar() {
                     </>
                 )}
             </AnimatePresence>
-        </nav>
+        </>
     );
 }
