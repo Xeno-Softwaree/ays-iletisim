@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 
 interface TurnstileWidgetProps {
     onToken: (token: string | null) => void;
-    action: "login" | "register";
+    action: "login" | "register" | "forgot-password" | "reset-password";
     theme?: "light" | "dark";
 }
 

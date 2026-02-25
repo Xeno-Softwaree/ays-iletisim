@@ -5,6 +5,7 @@ import { Key, Lock, Loader2, ArrowLeft, CheckCircle2, ShieldCheck } from 'lucide
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { TurnstileWidget } from '@/components/security/TurnstileWidget';
 
 function ResetPasswordForm() {
     const searchParams = useSearchParams();
@@ -15,6 +16,7 @@ function ResetPasswordForm() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -31,11 +33,17 @@ function ResetPasswordForm() {
 
         setLoading(true);
 
+        if (!turnstileToken) {
+            toast.error('Lütfen güvenlik doğrulamasını tamamlayın.');
+            setLoading(false);
+            return;
+        }
+
         try {
             const res = await fetch('/api/auth/reset-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token, password }),
+                body: JSON.stringify({ token, password, turnstileToken }),
             });
 
             if (res.ok) {
@@ -116,9 +124,11 @@ function ResetPasswordForm() {
                 </div>
             </div>
 
+            <TurnstileWidget action="reset-password" onToken={setTurnstileToken} />
+
             <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !turnstileToken}
                 className="w-full bg-slate-900 hover:bg-black text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-slate-900/10 flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.98]"
             >
                 {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Şifreyi Güncelle'}

@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { sendResetPasswordEmail } from '@/lib/brevo';
 import { NextResponse } from 'next/server';
 import { generateResetToken, hashToken } from '@/lib/auth-utils';
+import { verifyTurnstile } from '@/lib/turnstile';
 import rateLimit from '@/lib/rate-limit';
 
 const limiter = rateLimit({
@@ -17,10 +18,15 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Çok fazla istek gönderildi. Lütfen daha sonra tekrar deneyin.' }, { status: 429 });
         }
 
-        const { email } = await req.json();
+        const { email, turnstileToken } = await req.json();
 
         if (!email) {
             return NextResponse.json({ error: 'E-posta adresi gerekli' }, { status: 400 });
+        }
+
+        const isHuman = await verifyTurnstile(turnstileToken);
+        if (!isHuman) {
+            return NextResponse.json({ error: 'Güvenlik doğrulaması başarısız' }, { status: 400 });
         }
 
         const user = await prisma.user.findUnique({

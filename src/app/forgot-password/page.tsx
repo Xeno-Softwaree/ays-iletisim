@@ -4,21 +4,29 @@ import { useState } from 'react';
 import { Mail, ArrowRight, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { TurnstileWidget } from '@/components/security/TurnstileWidget';
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [isSent, setIsSent] = useState(false);
+    const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
 
         try {
+            if (!turnstileToken) {
+                toast.error('Lütfen güvenlik doğrulamasını tamamlayın.');
+                setLoading(false);
+                return;
+            }
+
             const res = await fetch('/api/auth/forgot-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
+                body: JSON.stringify({ email, turnstileToken }),
             });
 
             if (res.ok) {
@@ -84,9 +92,11 @@ export default function ForgotPasswordPage() {
                         </div>
                     </div>
 
+                    <TurnstileWidget action="forgot-password" onToken={setTurnstileToken} />
+
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || !turnstileToken}
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-blue-600/25 flex items-center justify-center gap-2 group disabled:opacity-50 active:scale-[0.98]"
                     >
                         {loading ? (

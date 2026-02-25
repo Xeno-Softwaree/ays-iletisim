@@ -2,13 +2,19 @@ import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { hashToken } from '@/lib/auth-utils';
+import { verifyTurnstile } from '@/lib/turnstile';
 
 export async function POST(req: Request) {
     try {
-        const { token, password } = await req.json();
+        const { token, password, turnstileToken } = await req.json();
 
         if (!token || !password) {
             return NextResponse.json({ error: 'Tüm alanlar gereklidir' }, { status: 400 });
+        }
+
+        const isHuman = await verifyTurnstile(turnstileToken);
+        if (!isHuman) {
+            return NextResponse.json({ error: 'Güvenlik doğrulaması başarısız' }, { status: 400 });
         }
 
         // Hash the incoming RAW token to compare with the one in DB
