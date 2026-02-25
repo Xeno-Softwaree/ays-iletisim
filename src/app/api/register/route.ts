@@ -3,10 +3,20 @@ import { hash } from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { generateVerificationToken } from '@/lib/tokens';
 import { sendVerificationEmail } from '@/lib/brevo';
+import { verifyTurnstile } from '@/lib/turnstile';
 
 export async function POST(req: Request) {
     try {
-        const { fullName, email, password, phone } = await req.json();
+        const { fullName, email, password, phone, turnstileToken } = await req.json();
+
+        // Validate Turnstile
+        const isHuman = await verifyTurnstile(turnstileToken);
+        if (!isHuman) {
+            return NextResponse.json(
+                { success: false, message: 'Doğrulama başarısız.' },
+                { status: 400 }
+            );
+        }
 
         // Validate
         if (!email || !password || !phone) {

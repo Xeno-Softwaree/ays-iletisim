@@ -7,12 +7,14 @@ import { toast } from 'sonner';
 import { AuthCard } from '@/components/auth/AuthCard';
 import { AuthInput } from '@/components/auth/AuthInput';
 import { AuthButton } from '@/components/auth/AuthButton';
+import { TurnstileWidget } from '@/components/security/TurnstileWidget';
 import Link from 'next/link';
 import { CheckCircle2 } from 'lucide-react';
 
 export default function LoginPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -22,10 +24,20 @@ export default function LoginPage() {
         const email = formData.get('email') as string;
         const password = formData.get('password') as string;
 
+        if (!turnstileToken) {
+            toast.error('Giriş Başarısız', {
+                description: 'Lütfen doğrulamayı tamamlayın.',
+                className: 'bg-red-500/10 border-red-500/20 text-red-500 font-bold backdrop-blur-md'
+            });
+            setLoading(false);
+            return;
+        }
+
         try {
             const res = await signIn('credentials', {
                 email,
                 password,
+                turnstileToken,
                 redirect: false,
             });
 
@@ -91,7 +103,9 @@ export default function LoginPage() {
                     <Link href="/forgot-password" title="Şifremi Unuttum" className="text-xs font-bold text-blue-600 hover:text-blue-500 transition-colors uppercase tracking-wide">Şifremi Unuttum?</Link>
                 </div>
 
-                <AuthButton type="submit" loading={loading}>
+                <TurnstileWidget action="login" onToken={setTurnstileToken} />
+
+                <AuthButton type="submit" loading={loading} disabled={!turnstileToken || loading}>
                     GİRİŞ YAP
                 </AuthButton>
             </form>

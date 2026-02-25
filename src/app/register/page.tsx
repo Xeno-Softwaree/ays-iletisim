@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { AuthCard } from '@/components/auth/AuthCard';
 import { AuthInput } from '@/components/auth/AuthInput';
 import { AuthButton } from '@/components/auth/AuthButton';
+import { TurnstileWidget } from '@/components/security/TurnstileWidget';
 import Link from 'next/link';
 import { CheckCircle2 } from 'lucide-react';
 
@@ -13,6 +14,7 @@ export default function RegisterPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [passwordStrength, setPasswordStrength] = useState(0);
+    const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
     const checkPasswordStrength = (pass: string) => {
         let strength = 0;
@@ -41,11 +43,23 @@ export default function RegisterPage() {
             return;
         }
 
+        if (!turnstileToken) {
+            toast.error('Doğrulama Gerekli', {
+                description: 'Lütfen doğrulamayı tamamlayın.',
+                className: 'bg-red-500/10 border-red-500/20 text-red-500 font-bold backdrop-blur-md'
+            });
+            setLoading(false);
+            return;
+        }
+
         try {
             const res = await fetch('/api/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
+                body: JSON.stringify({
+                    ...data,
+                    turnstileToken
+                }),
             });
 
             const result = await res.json();
@@ -143,7 +157,9 @@ export default function RegisterPage() {
                     theme="light"
                 />
 
-                <AuthButton type="submit" loading={loading} className="mt-4">
+                <TurnstileWidget action="register" onToken={setTurnstileToken} />
+
+                <AuthButton type="submit" loading={loading} disabled={!turnstileToken || loading} className="mt-4">
                     HESAP OLUŞTUR
                 </AuthButton>
             </form>

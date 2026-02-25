@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { authConfig } from "./auth.config";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     ...authConfig,
@@ -11,10 +12,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             credentials: {
                 email: { label: "Email", type: "email" },
                 password: { label: "Password", type: "password" },
+                turnstileToken: { label: "Turnstile Token", type: "text" },
             },
             async authorize(credentials) {
                 if (!credentials?.email || !credentials?.password) {
                     throw new Error("Email ve şifre gerekli.");
+                }
+
+                const turnstileToken = credentials.turnstileToken as string | undefined;
+                const isHuman = await verifyTurnstile(turnstileToken);
+                if (!isHuman) {
+                    throw new Error("Güvenlik doğrulaması başarısız.");
                 }
 
                 const email = credentials.email as string;
