@@ -12,6 +12,7 @@ import {
     ChevronRight,
     Loader2
 } from 'lucide-react';
+import { TurnstileWidget } from '@/components/security/TurnstileWidget';
 
 const BRANDS = ['Apple', 'Samsung', 'Xiaomi', 'Huawei', 'Oppo', 'Realme', 'Diğer'];
 
@@ -36,6 +37,7 @@ export default function TradeInPage() {
     });
 
     const [result, setResult] = useState<{ estimatedPrice: number } | null>(null);
+    const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
     // Fetch available models from settings
     useEffect(() => {
@@ -82,13 +84,21 @@ export default function TradeInPage() {
 
     const handleFinalSubmit = async () => {
         setLoading(true);
+
+        if (!turnstileToken) {
+            toast.error('Lütfen güvenlik doğrulamasını tamamlayın.');
+            setLoading(false);
+            return;
+        }
+
         try {
             const res = await fetch('/api/trade-in', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...formData,
-                    estimatedPrice: result?.estimatedPrice
+                    estimatedPrice: result?.estimatedPrice,
+                    turnstileToken
                 })
             });
             const data = await res.json();
@@ -329,9 +339,12 @@ export default function TradeInPage() {
                                         />
                                     </div>
                                 </div>
+
+                                <TurnstileWidget action="trade-in" onToken={setTurnstileToken} />
+
                                 <button
                                     onClick={handleFinalSubmit}
-                                    disabled={loading || !formData.customerPhone || !formData.customerName || !formData.customerEmail}
+                                    disabled={loading || !formData.customerPhone || !formData.customerName || !formData.customerEmail || !turnstileToken}
                                     className="w-full h-20 bg-slate-900 text-white rounded-[28px] font-black text-2xl hover:bg-slate-800 disabled:opacity-30 transition-all shadow-xl shadow-slate-900/10 flex items-center justify-center gap-4 uppercase tracking-widest"
                                 >
                                     {loading ? <Loader2 className="w-8 h-8 animate-spin" /> : 'SİZİ ARAYALIM'}

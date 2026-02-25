@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { NextResponse } from 'next/server';
+import { verifyTurnstile } from '@/lib/turnstile';
 
 export async function POST(req: Request) {
     try {
@@ -10,7 +11,12 @@ export async function POST(req: Request) {
         }
 
         const body = await req.json();
-        const { items, shipping, paymentMethod, contracts } = body;
+        const { items, shipping, paymentMethod, contracts, turnstileToken } = body;
+
+        const isHuman = await verifyTurnstile(turnstileToken);
+        if (!isHuman) {
+            return NextResponse.json({ message: 'Güvenlik doğrulaması başarısız.' }, { status: 400 });
+        }
 
         // Contract Validation (Backend)
         if (!contracts || !contracts.distanceSalesAccepted || !contracts.preInfoAccepted) {

@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { sendTradeInStatusEmail } from '@/lib/brevo';
+import { verifyTurnstile } from '@/lib/turnstile';
 import fs from 'fs';
 import path from 'path';
 
@@ -20,7 +21,12 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { brand, model, screenCondition, batteryHealth, estimatedPrice, customerPhone, customerName, customerEmail } = body;
+        const { brand, model, screenCondition, batteryHealth, estimatedPrice, customerPhone, customerName, customerEmail, turnstileToken } = body;
+
+        const isHuman = await verifyTurnstile(turnstileToken);
+        if (!isHuman) {
+            return NextResponse.json({ success: false, message: 'Güvenlik doğrulaması başarısız' }, { status: 400 });
+        }
 
         // Validation
         if (!brand || !model || !screenCondition || batteryHealth === undefined || !estimatedPrice || !customerPhone) {

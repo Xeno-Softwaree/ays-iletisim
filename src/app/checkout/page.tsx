@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Smartphone, MapPin, CreditCard, Wallet, CheckCircle, CheckCircle2, Loader2, ShieldCheck, Filter, ArrowLeft, Heart, ShoppingBag, Settings, LogOut, Search, Smartphone as Phone, Instagram, Twitter, Facebook, Mail, ChevronRight, ChevronDown, Check, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { TurnstileWidget } from '@/components/security/TurnstileWidget';
 
 export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCart();
@@ -40,6 +41,7 @@ export default function CheckoutPage() {
   const [discountAmount, setDiscountAmount] = useState(0);
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [verifyingCoupon, setVerifyingCoupon] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBankAccounts = async () => {
@@ -168,6 +170,11 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (!turnstileToken) {
+      toast.error('Lütfen güvenlik doğrulamasını tamamlayın.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -184,6 +191,7 @@ export default function CheckoutPage() {
           },
           paymentMethod: form.paymentMethod,
           couponCode: appliedCoupon,
+          turnstileToken,
           contracts: {
             ...contracts,
             acceptedAt: new Date().toISOString(),
@@ -562,10 +570,12 @@ export default function CheckoutPage() {
                   Siparişini tamamlamak için son adım!
                 </p>
 
+                <TurnstileWidget action="checkout" onToken={setTurnstileToken} theme="light" />
+
                 <button
                   type="submit"
                   form="checkout-form"
-                  disabled={loading}
+                  disabled={loading || !turnstileToken}
                   className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold h-14 rounded-xl transition-all shadow-lg shadow-blue-500/20 group flex items-center justify-center gap-2 active:scale-[0.98]"
                 >
                   {loading ? (
@@ -608,7 +618,7 @@ export default function CheckoutPage() {
           <button
             type="submit"
             form="checkout-form"
-            disabled={loading}
+            disabled={loading || !turnstileToken}
             className="flex-1 h-12 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-sm rounded-xl transition-all active:scale-95 shadow-lg shadow-blue-500/20"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Ödemeyi Tamamla'}
