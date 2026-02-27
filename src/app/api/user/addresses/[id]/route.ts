@@ -1,6 +1,9 @@
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
+
+const idSchema = z.string().uuid();
 
 export async function PUT(
     req: Request,
@@ -12,9 +15,18 @@ export async function PUT(
             return NextResponse.json({ message: 'Yetkisiz erişim' }, { status: 401 });
         }
 
-        const { id } = await params;
+        const { id: rawId } = await params;
+        const idParse = idSchema.safeParse(rawId);
+        if (!idParse.success) {
+            return NextResponse.json({ message: 'Geçersiz adres ID formatı' }, { status: 400 });
+        }
+        const id = idParse.data;
+
         const body = await req.json();
         const { title, fullName, phone, city, district, openAddress, isDefault } = body;
+
+        // Ensure isDefault is explicitly a boolean to prevent object injection here too
+        const safeIsDefault = typeof isDefault === 'boolean' ? isDefault : false;
 
         const user = await prisma.user.findUnique({
             where: { email: session.user.email },
@@ -33,7 +45,7 @@ export async function PUT(
         }
 
         // If setting as default, unset others first
-        if (isDefault) {
+        if (safeIsDefault) {
             await prisma.address.updateMany({
                 where: { userId: user.id, id: { not: id } },
                 data: { isDefault: false }
@@ -49,7 +61,7 @@ export async function PUT(
                 city,
                 district,
                 openAddress,
-                isDefault
+                isDefault: safeIsDefault
             }
         });
 
@@ -70,7 +82,12 @@ export async function DELETE(
             return NextResponse.json({ message: 'Yetkisiz erişim' }, { status: 401 });
         }
 
-        const { id } = await params;
+        const { id: rawId } = await params;
+        const idParse = idSchema.safeParse(rawId);
+        if (!idParse.success) {
+            return NextResponse.json({ message: 'Geçersiz adres ID formatı' }, { status: 400 });
+        }
+        const id = idParse.data;
 
         const user = await prisma.user.findUnique({
             where: { email: session.user.email },
