@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const baseUrl = 'https://aysiletisim.com';
+    const baseUrl = 'https://www.ays-iletisim.com';
 
     // Static pages
     const routes = [
